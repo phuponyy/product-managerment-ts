@@ -2,13 +2,14 @@ import { Request, Response } from "express";
 import Task from "../../../models/task.model";
 import isValidStatus from "../../../helpers/isValidStatus.helper";
 import paginationHelper from "../../../helpers/pagination.helper";
-import { count } from "console";
+import searchHelper from "../../../helpers/search.helper";
 
 //NOTE: [GET] /api/v1/tasks
 export const index = async (req: Request, res: Response) => {
   interface Find {
     deleted: boolean;
     status?: string;
+    title?: RegExp;
   }
   const find: Find = {
     deleted: false,
@@ -25,6 +26,14 @@ export const index = async (req: Request, res: Response) => {
   if (req.query.status) {
     find.status = req.query.status.toString();
   }
+
+  // search
+  let objectSearch = searchHelper(req.query);
+
+  if (req.query.keyword) {
+    find.title = objectSearch.regex;
+  }
+  // -search
 
   // pagination
   const countRecords = await Task.countDocuments(find);
